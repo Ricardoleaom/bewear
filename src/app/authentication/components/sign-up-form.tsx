@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,32 +23,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client"; // ajuste o caminho conforme necessário
 
-// ✅ Schema com validação de confirmação de senha
 const formSchema = z
   .object({
-    name: z
-      .string()
-      .min(1, "Digite seu nome")
-      .trim()
-      .min(2, "O nome deve ter pelo menos 2 caracteres"),
+    name: z.string().trim().min(2, "O nome deve ter pelo menos 2 caracteres"),
     email: z.string().email("Digite um email válido"),
     password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
     passwordConfirmation: z.string().min(6, "Confirme sua senha"),
   })
-  .refine(
-    (data) => {
-      return data.password === data.passwordConfirmation;
-    },
-    {
-      message: "As senhas não coincidem",
-      path: ["passwordConfirmation"],
-    },
-  );
+  .refine((data) => data.password === data.passwordConfirmation, {
+    message: "As senhas não coincidem",
+    path: ["passwordConfirmation"],
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const SignUpForm = () => {
+  const router = useRouter(); // se você estiver usando o roteamento do Next.js
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,9 +51,26 @@ const SignUpForm = () => {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Formulário de cadastro enviado com sucesso!");
-    console.log(values);
+  async function onSubmit(values: FormValues) {
+    try {
+      await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login"); // redireciona para a página de login após o sucesso
+          },
+        onError: (error) => {
+            if (error.error.code === "USER_ALREADY_EXISTS") {
+              toast.error("Email já existente. Tente outro.");
+            form.setError("email", {
+            message: "Email já cadastrado. Tente outro.",
+            });
+            }
+            toast.error("Erro ao criar conta. Tente novamente.");
+          },
+        }), 
   }
 
   return (
@@ -73,7 +83,6 @@ const SignUpForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <CardContent className="grid gap-6">
-            {/* Nome */}
             <FormField
               control={form.control}
               name="name"
@@ -88,7 +97,6 @@ const SignUpForm = () => {
               )}
             />
 
-            {/* Email */}
             <FormField
               control={form.control}
               name="email"
@@ -107,7 +115,6 @@ const SignUpForm = () => {
               )}
             />
 
-            {/* Senha */}
             <FormField
               control={form.control}
               name="password"
@@ -122,7 +129,6 @@ const SignUpForm = () => {
               )}
             />
 
-            {/* Confirmação de Senha */}
             <FormField
               control={form.control}
               name="passwordConfirmation"
