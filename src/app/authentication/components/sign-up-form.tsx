@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation"; // ✅ IMPORTADO
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -23,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client"; // ajuste o caminho conforme necessário
+import { authClient } from "@/lib/auth-client";
 
 const formSchema = z
   .object({
@@ -40,7 +41,8 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 const SignUpForm = () => {
-  const router = useRouter(); // se você estiver usando o roteamento do Next.js
+  const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,20 +59,21 @@ const SignUpForm = () => {
         name: values.name,
         email: values.email,
         password: values.password,
-        fetchOptions: {
-          onSuccess: () => {
-            router.push("/login"); // redireciona para a página de login após o sucesso
-          },
-        onError: (error) => {
-            if (error.error.code === "USER_ALREADY_EXISTS") {
-              toast.error("Email já existente. Tente outro.");
-            form.setError("email", {
-            message: "Email já cadastrado. Tente outro.",
-            });
-            }
-            toast.error("Erro ao criar conta. Tente novamente.");
-          },
-        }), 
+      });
+
+      toast.success("Conta criada com sucesso!");
+      router.push("/login");
+    } catch (error: any) {
+      if (error?.error?.code === "USER_ALREADY_EXISTS") {
+        toast.error("Email já existente. Tente outro.");
+        form.setError("email", {
+          message: "Email já cadastrado. Tente outro.",
+        });
+        return;
+      }
+
+      toast.error("Erro ao criar conta. Tente novamente.");
+    }
   }
 
   return (

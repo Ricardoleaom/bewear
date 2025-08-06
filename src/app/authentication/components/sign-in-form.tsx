@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Router } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -40,9 +42,31 @@ const SignInForm = () => {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Formulário enviado com sucesso!");
-    console.log(values);
+  async function onSubmit(values: FormValues) {
+    await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+        },
+        onError: (ctx) => {
+          if (ctx.error.code === "user_not_found") {
+            toast.error("Usuário não encontrado");
+            return form.setError("email", {
+              message: "Usuário não encontrado",
+            });
+          }
+          if (ctx.error.code === "invalid_credentials") {
+            toast.error("Email ou senha inválidos");
+            return form.setError("email", {
+              message: "Email ou senha inválidos",
+            });
+          }
+          toast.error("Erro ao fazer login");
+        },
+      },
+    });
   }
 
   return (
