@@ -14,7 +14,6 @@ export const auth = betterAuth({
   }),
   trustedOrigins: [
     "http://localhost:3000",
-    "https://localhost:3000",
     "http://localhost:3001",
     "https://localhost:3001",
     "https://friendly-yodel-rq546qpq5qv35wjx-3000.app.github.dev",
