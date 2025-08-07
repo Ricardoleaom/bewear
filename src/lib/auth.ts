@@ -12,6 +12,14 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://localhost:3001",
+    "https://localhost:3001",
+    "https://friendly-yodel-rq546qpq5qv35wjx-3000.app.github.dev",
+    "https://friendly-yodel-rq546qpq5qv35wjx-3001.app.github.dev",
+  ],
   user: {
     modelName: "userTable",
   },
@@ -20,5 +28,8 @@ export const auth = betterAuth({
   },
   account: {
     modelName: "accountTable",
+  },
+  verification: {
+    modelName: "verificationTable",
   },
 });
