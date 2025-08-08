@@ -5,10 +5,12 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/common/footer";
 import { Header } from "@/components/common/header";
 import ProductList from "@/components/common/product-list";
+import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { productTable, productVariantTable } from "@/db/schema";
 import { formatCentsToBRL } from "@/helpers/money";
 
+import QuantitySelector from "./components/quantaty-selector";
 import VariantSelector from "./components/variant-selector";
 
 interface ProductVariantPageProps {
@@ -50,9 +52,10 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
         />
 
         <div className="px-5">
+          {/* VARIANTES */}
           <VariantSelector
-            selectedVariantSlug={productVariant.slug}
             variants={productVariant.product.variants}
+            selectedVariantSlug={""}
           />
         </div>
 
@@ -67,6 +70,20 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
           <h3 className="text-lg font-semibold">
             {formatCentsToBRL(productVariant.priceInCents)}
           </h3>
+        </div>
+        <div className="px-5">
+          {/*QUANTIDADE*/}
+          <QuantitySelector />
+        </div>
+
+        <div className="flex flex-col space-y-4 px-5">
+          {/*BOTOES*/}
+          <Button className="rounded-full" size="lg" variant="outline">
+            Adicionar à sacola
+          </Button>
+          <Button className="rounded-full" size="lg" variant="outline">
+            Comprar agora
+          </Button>
         </div>
 
         <div className="px-5">
